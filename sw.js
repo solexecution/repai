@@ -7,7 +7,7 @@
  *    served from cache when offline
  */
 
-const CACHE_VERSION = 'repai-v2';
+const CACHE_VERSION = 'repai-v3';
 
 const APP_SHELL = [
   './index.html',
@@ -15,9 +15,11 @@ const APP_SHELL = [
   './app.js',
   './pose-engine.js',
   './rep-counter.js',
+  './voice-assistant.js',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './videos/pushup.mp4'
 ];
 
 // ─── Install ────────────────────────────────────────────────────────────────

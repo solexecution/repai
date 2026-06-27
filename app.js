@@ -149,10 +149,14 @@ class App {
     this.settings = {
       audioEnabled:   true,
       showAngle:      true,
-      strictMode:     true, // Default strict
-      sensitivity:    50,   // 0–100; maps to elbow angle thresholds
+      strictMode:     true,
+      sensitivity:    50,
+      voiceEnabled:   false,
     };
     this._loadSettings();
+
+    // ── Voice Assistant ──────────────────────────────────────────
+    this.voice = new VoiceAssistant(this);
 
     // ── Engine + Counters ────────────────────────────────────────
     this.poseEngine  = new PoseEngine();
@@ -171,7 +175,35 @@ class App {
     this._init();
   }
 
-  // ─── Initialisation ─────────────────────────────────────────────────────────
+  // ─── Layout Manager ──────────────────────────────────────────────────────────
+
+  setLayout(mode) {
+    const layout = this.$('main-layout');
+    const refCell = this.$('reference-cell');
+    
+    if (mode === 'camera') {
+      layout.className = 'layout-camera-only';
+      refCell.classList.add('hidden');
+    } else if (mode === 'reference') {
+      layout.className = 'layout-camera-only';
+      refCell.classList.remove('hidden');
+      // Hide camera cell by making layout 1fr but refCell is the only visible one?
+      // Actually, if we hide the camera cell, pose detection will fail because video might stop playing or canvas resizes to 0.
+      // Better to use a specific class for reference only, but for now we can just use CSS to hide it.
+      this.$('camera-cell').classList.add('hidden');
+    } else if (mode === 'split') {
+      layout.className = 'layout-split-screen';
+      refCell.classList.remove('hidden');
+      this.$('camera-cell').classList.remove('hidden');
+    }
+    
+    // Ensure camera cell isn't hidden unless explicitly 'reference' mode
+    if (mode !== 'reference') {
+      this.$('camera-cell').classList.remove('hidden');
+    }
+  }
+
+  // ─── Engine Callbacks ─────────────────────────────────────────────────────────
 
   async _init() {
     this._registerSW();
@@ -211,6 +243,12 @@ class App {
     this.loadingScreen.classList.add('fade-out');
     await this._sleep(500);
     this.loadingScreen.style.display = 'none';
+
+    // Hide permission screen if visible
+    this.permScreen.classList.add('hidden');
+    
+    // Set initial layout
+    this.setLayout(this.exercise === 'pushup' ? 'split' : 'camera');
 
     this._setStatus('ready', 'Ready — tap START');
 
@@ -720,6 +758,9 @@ class App {
         this._applyExerciseTheme();
         this._updatePhaseDisplay(null);
         this._updateAngleDisplay(null);
+        
+        // Update layout (only pushups has a reference video)
+        this.setLayout(this.exercise === 'pushup' ? 'split' : 'camera');
       });
     });
 
@@ -806,6 +847,24 @@ class App {
       strictToggle.checked = this.settings.strictMode;
       strictToggle.addEventListener('change', () => {
         this.settings.strictMode = strictToggle.checked;
+        this._saveSettings();
+      });
+    }
+
+    // Settings: voice toggle
+    const voiceToggle = this.$('voice-toggle');
+    if (voiceToggle) {
+      voiceToggle.checked = this.settings.voiceEnabled;
+      if (this.settings.voiceEnabled) {
+        setTimeout(() => this.voice.start(), 1000); // Give it a sec to load
+      }
+      voiceToggle.addEventListener('change', () => {
+        this.settings.voiceEnabled = voiceToggle.checked;
+        if (this.settings.voiceEnabled) {
+          this.voice.start();
+        } else {
+          this.voice.stop();
+        }
         this._saveSettings();
       });
     }

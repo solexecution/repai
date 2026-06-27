@@ -56,20 +56,26 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════
-       MAIN CAMERA + CANVAS LAYER
+       MAIN LAYOUT (Camera + Reference Video)
   ════════════════════════════════════════════════════════════ -->
-  <div id="camera-container">
+  <div id="main-layout" class="layout-camera-only">
 
-    <!-- Hidden video source element -->
-    <video id="camera-feed" autoplay playsinline muted></video>
+    <div id="video-grid">
+      <!-- Camera Cell -->
+      <div id="camera-cell" class="grid-cell">
+        <video id="camera-feed" autoplay playsinline muted></video>
+        <canvas id="skeleton-canvas"></canvas>
+        <div id="guide-overlay">
+          <div class="guide-silhouette">💪</div>
+          <div class="guide-text">Position yourself sideways to the camera</div>
+        </div>
+      </div>
 
-    <!-- Canvas — receives the video frames + skeleton overlay -->
-    <canvas id="skeleton-canvas"></canvas>
-
-    <!-- Guide overlay (shown when no person is detected) -->
-    <div id="guide-overlay">
-      <div class="guide-silhouette">💪</div>
-      <div class="guide-text">Position yourself sideways to the camera</div>
+      <!-- Reference Cell -->
+      <div id="reference-cell" class="grid-cell hidden">
+        <video id="reference-video" autoplay loop muted playsinline src="./videos/pushup.mp4"></video>
+        <div class="ref-label">REFERENCE</div>
+      </div>
     </div>
 
     <!-- ── TOP BAR ────────────────────────────────────────────── -->
@@ -98,6 +104,7 @@
       </div>
 
       <!-- Icon buttons -->
+      <div id="voice-indicator" class="voice-inactive" title="Voice Commands (Disabled)">🎙️</div>
       <button class="icon-btn" id="settings-btn" title="Settings" aria-label="Settings">⚙️</button>
       <button class="icon-btn" id="flip-btn" title="Flip Camera" aria-label="Flip camera">🔄</button>
       <button class="icon-btn" id="history-btn" title="History" aria-label="Workout history">📊</button>
@@ -123,6 +130,8 @@
       <!-- Elbow angle (optional) -->
       <div id="angle-display"></div>
 
+      <!-- Voice Toast (pops up when command is heard) -->
+      <div id="voice-toast" class="hidden"></div>
     </div>
 
     <!-- ── BOTTOM BAR ────────────────────────────────────────────── -->
@@ -154,7 +163,7 @@
 
     </footer>
 
-  </div><!-- /#camera-container -->
+  </div><!-- /#main-layout -->
 
   <!-- ═══════════════════════════════════════════════════════════
        DASHBOARD / CALENDAR OVERLAY (Full Screen)
@@ -233,6 +242,18 @@
       <p class="setting-desc">Enforce perfect reps and allow fractional scoring for half-reps.</p>
     </div>
 
+    <!-- Voice Commands -->
+    <div class="setting-row">
+      <div class="toggle-row">
+        <span class="setting-label">Voice Commands</span>
+        <label class="toggle">
+          <input type="checkbox" id="voice-toggle" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <p class="setting-desc">Listen for "Start", "Pause", "Pushups", "Hide camera" etc. (Requires Mic)</p>
+    </div>
+
     <!-- Sensitivity -->
     <div class="setting-row">
       <span class="setting-label">Sensitivity</span>
@@ -262,6 +283,7 @@
 <!-- App scripts (loaded after DOM) -->
 <script src="./rep-counter.js"></script>
 <script src="./pose-engine.js"></script>
+<script src="./voice-assistant.js"></script>
 <script src="./app.js"></script>
 
 </body>
