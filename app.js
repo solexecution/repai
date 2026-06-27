@@ -260,8 +260,8 @@ class App {
     // Hide permission screen if visible
     this.permScreen.classList.add('hidden');
     
-    // Set initial layout
-    this.setLayout(this.exercise === 'pushup' ? 'split' : 'camera');
+    // Set initial layout to camera only (hide video until START)
+    this.setLayout('camera');
 
     this._setStatus('ready', 'Ready — tap START');
 
