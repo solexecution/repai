@@ -112,12 +112,12 @@ class VoiceAssistant {
       this.scriptNode.onaudioprocess = (event) => {
         if (!this.isActive) return;
         try {
-          const buffer = event.inputBuffer.getChannelData(0);
+          const float32Array = event.inputBuffer.getChannelData(0);
           
           // Calculate volume for visual clue
           let sum = 0;
-          for (let i = 0; i < buffer.length; i++) sum += buffer[i] * buffer[i];
-          const rms = Math.sqrt(sum / buffer.length);
+          for (let i = 0; i < float32Array.length; i++) sum += float32Array[i] * float32Array[i];
+          const rms = Math.sqrt(sum / float32Array.length);
           const vol = Math.min(1, rms * 15); // Scale volume up for UI
           
           if (this.indicator) {
@@ -125,7 +125,16 @@ class VoiceAssistant {
             this.indicator.style.boxShadow = `0 0 ${10 + vol * 30}px rgba(255, 51, 102, ${0.4 + vol})`;
           }
 
-          if (this.recognizer.acceptWaveform(buffer)) {
+          // The Vosk WASM library expects an AudioBuffer when calling acceptWaveform, OR
+          // we can just pass an object that ducks-types getChannelData() and sampleRate.
+          // Let's pass a mock AudioBuffer so the wrapper processes it correctly.
+          const mockAudioBuffer = {
+            numberOfChannels: 1,
+            sampleRate: this.audioContext.sampleRate,
+            getChannelData: () => float32Array
+          };
+
+          if (this.recognizer.acceptWaveform(mockAudioBuffer)) {
             const res = this.recognizer.result();
             if (res && res.text) {
               this._parseCommand(res.text.toLowerCase().trim());
