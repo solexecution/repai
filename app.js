@@ -162,7 +162,7 @@ class App {
       showAngle:      true,
       strictMode:     true,
       sensitivity:    50,
-      voiceEnabled:   false,
+      privacyMode:    false,
     };
     this._loadSettings();
 
@@ -354,7 +354,7 @@ class App {
         const counter = this.counters[this.exercise];
         const trackedIndices = counter.getTrackedIndices ? counter.getTrackedIndices(keypoints) : null;
         
-        drawSkeletonOnCanvas(this.ctx, this.videoEl, keypoints, accent, trackedIndices);
+        drawSkeletonOnCanvas(this.ctx, this.videoEl, keypoints, accent, trackedIndices, this.settings.privacyMode);
 
         // Count reps only if workout is active
         if (this.isWorkoutActive && keypoints.length > 0) {
@@ -944,7 +944,15 @@ class App {
       });
     }
 
-    // Settings: voice toggle removed since it's always on
+    // Settings: privacy mode
+    const privacyToggle = this.$('privacy-toggle');
+    if (privacyToggle) {
+      privacyToggle.checked = this.settings.privacyMode;
+      privacyToggle.addEventListener('change', () => {
+        this.settings.privacyMode = privacyToggle.checked;
+        this._saveSettings();
+      });
+    }
 
     // Settings: sensitivity slider
     const sensSlider = this.$('sensitivity-slider');

@@ -114,7 +114,7 @@ const ARM_KEYPOINTS = new Set([5, 6, 7, 8, 9, 10]); // shoulders + elbows + wris
  * @param {string} accentColor – CSS color for highlighted joints
  * @returns {{ sx,sy,sw,sh,scaleX,scaleY }} crop transform (for external use)
  */
-function drawSkeletonOnCanvas(ctx, video, keypoints, accentColor = '#4facfe', trackedIndices = null) {
+function drawSkeletonOnCanvas(ctx, video, keypoints, accentColor = '#4facfe', trackedIndices = null, hideVideo = false) {
   const { canvas } = ctx;
   const cw = canvas.width;
   const ch = canvas.height;
@@ -135,7 +135,13 @@ function drawSkeletonOnCanvas(ctx, video, keypoints, accentColor = '#4facfe', tr
     sh = vw / canvasAR;
     sy = (vh - sh) / 2;
   }
-  ctx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch);
+  
+  if (hideVideo) {
+    ctx.fillStyle = '#0a0d16';
+    ctx.fillRect(0, 0, cw, ch);
+  } else {
+    ctx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch);
+  }
 
   if (!keypoints || keypoints.length === 0 || !trackedIndices) {
     return { sx, sy, sw, sh, scaleX: cw / sw, scaleY: ch / sh };

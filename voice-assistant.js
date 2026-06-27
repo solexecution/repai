@@ -246,6 +246,16 @@ class VoiceAssistant {
       if (btn) btn.click();
       handled = true;
     }
+    else if (cmd.includes('privacy') || cmd.includes('hide me')) {
+      const toggle = document.getElementById('privacy-toggle');
+      if (toggle && !toggle.checked) toggle.click();
+      handled = true;
+    }
+    else if (cmd.includes('show me')) {
+      const toggle = document.getElementById('privacy-toggle');
+      if (toggle && toggle.checked) toggle.click();
+      handled = true;
+    }
     else if (cmd.includes('show camera')) {
       this.app.setLayout('split');
       handled = true;
