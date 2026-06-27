@@ -42,6 +42,14 @@
     </div>
   </div>
 
+  <div id="voice-download-progress" class="hidden">
+    <p>Downloading Offline AI Voice Model...</p>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill" id="voice-progress-fill"></div>
+    </div>
+    <p id="voice-progress-text">0%</p>
+  </div>
+
   <!-- ═══════════════════════════════════════════════════════════
        CAMERA PERMISSION SCREEN
   ════════════════════════════════════════════════════════════ -->
@@ -52,7 +60,7 @@
       RepAI needs your camera to detect your body position and count reps.
       All processing happens on-device — nothing is uploaded or stored.
     </p>
-    <button class="perm-btn" id="grant-camera-btn">Enable Camera</button>
+      <button class="primary-btn" id="grant-camera-btn">GRANT CAMERA & MIC</button>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════
@@ -252,10 +260,11 @@
     <!-- Voice Commands -->
     <div class="setting-row">
       <div class="toggle-row">
-        <span class="setting-label">Voice Commands</span>
-        <label class="toggle">
-          <input type="checkbox" id="voice-toggle" />
-          <span class="toggle-slider"></span>
+        <div class="setting-item" style="display: none;">
+        <span>Voice Commands</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="voice-toggle">
+          <span class="slider"></span>
         </label>
       </div>
       <p class="setting-desc">Listen for "Start", "Pause", "Pushups", "Hide camera" etc. (Requires Mic)</p>

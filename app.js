@@ -294,13 +294,20 @@ class App {
         height: { ideal: 1080 },
         frameRate: { ideal: 15 } // Force higher exposure/sharpness
       },
-      audio: false,
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        channelCount: 1,
+        sampleRate: 16000
+      },
     };
 
     this.stream = await navigator.mediaDevices.getUserMedia(constraints);
     this.videoEl.srcObject = this.stream;
     this.videoEl.playsInline = true;
-    this.videoEl.muted = true;
+
+    // Start voice assistant automatically with the same stream
+    this.voice.start(this.stream).catch(e => console.error('Voice failed', e));
 
     await new Promise((resolve, reject) => {
       this.videoEl.onloadedmetadata = () => {
@@ -928,23 +935,7 @@ class App {
       });
     }
 
-    // Settings: voice toggle
-    const voiceToggle = this.$('voice-toggle');
-    if (voiceToggle) {
-      voiceToggle.checked = this.settings.voiceEnabled;
-      if (this.settings.voiceEnabled) {
-        setTimeout(() => this.voice.start(), 1000); // Give it a sec to load
-      }
-      voiceToggle.addEventListener('change', () => {
-        this.settings.voiceEnabled = voiceToggle.checked;
-        if (this.settings.voiceEnabled) {
-          this.voice.start();
-        } else {
-          this.voice.stop();
-        }
-        this._saveSettings();
-      });
-    }
+    // Settings: voice toggle removed since it's always on
 
     // Settings: sensitivity slider
     const sensSlider = this.$('sensitivity-slider');

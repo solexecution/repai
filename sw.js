@@ -7,7 +7,7 @@
  *    served from cache when offline
  */
 
-const CACHE_VERSION = 'repai-v8';
+const CACHE_VERSION = 'repai-v9';
 
 const APP_SHELL = [
   './index.html',
@@ -21,7 +21,7 @@ const APP_SHELL = [
   './icons/icon-512.png',
   './videos/pushup.mp4',
   './vosk/vosk.js',
-  './vosk/vosk-model-small-en-us-0.15.zip'
+  './vosk/vosk-model-small-en-us-0.15.tar.gz'
 ];
 
 // ─── Install ────────────────────────────────────────────────────────────────

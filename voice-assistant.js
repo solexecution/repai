@@ -34,8 +34,43 @@ class VoiceAssistant {
         throw new Error("Vosk library not loaded");
       }
 
-      // Initialize the model from the zip file
-      this.model = await window.Vosk.createModel('./vosk/vosk-model-small-en-us-0.15.zip');
+      // Fetch the model with progress
+      const url = './vosk/vosk-model-small-en-us-0.15.tar.gz';
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Failed to fetch model: ${response.statusText}`);
+      
+      const contentLength = response.headers.get('content-length');
+      const total = parseInt(contentLength, 10);
+      let loaded = 0;
+      
+      const progressContainer = document.getElementById('voice-download-progress');
+      const progressFill = document.getElementById('voice-progress-fill');
+      const progressText = document.getElementById('voice-progress-text');
+      
+      if (progressContainer) progressContainer.classList.remove('hidden');
+
+      const reader = response.body.getReader();
+      const chunks = [];
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        loaded += value.length;
+        if (total && progressFill && progressText) {
+          const percent = Math.round((loaded / total) * 100);
+          progressFill.style.width = `${percent}%`;
+          progressText.textContent = `${percent}%`;
+        }
+      }
+      
+      if (progressContainer) progressContainer.classList.add('hidden');
+
+      const blob = new Blob(chunks);
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Initialize the model from the fetched blob url
+      this.model = await window.Vosk.createModel(blobUrl);
       this.recognizer = new this.model.KaldiRecognizer(16000);
       this.recognizer.setWords(true);
       
@@ -56,21 +91,14 @@ class VoiceAssistant {
     }
   }
 
-  async start() {
+  async start(stream) {
     if (this.isActive) return;
     try {
       if (!this.isModelLoaded) {
         await this.initModel();
       }
       
-      this.stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          channelCount: 1,
-          sampleRate: 16000
-        } 
-      });
+      this.stream = stream;
       this.audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
       this.mediaStreamSource = this.audioContext.createMediaStreamSource(this.stream);
       
@@ -120,8 +148,6 @@ class VoiceAssistant {
         this.indicator.classList.add('voice-inactive');
       }
       this._showToast('Microphone error or Model failed');
-      const toggle = document.getElementById('voice-toggle');
-      if (toggle) toggle.checked = false;
     }
   }
 
