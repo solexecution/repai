@@ -161,7 +161,7 @@ function drawSkeletonOnCanvas(ctx, video, keypoints, accentColor = '#4facfe', tr
     if (!a || !b) continue;
     const confA = a.score ?? 1;
     const confB = b.score ?? 1;
-    if (confA < 0.2 || confB < 0.2) continue;
+    if (confA < 0.4 || confB < 0.4) continue;
 
     const alpha = Math.min(confA, confB);
 
@@ -188,7 +188,7 @@ function drawSkeletonOnCanvas(ctx, video, keypoints, accentColor = '#4facfe', tr
     const kp = keypoints[i];
     if (!kp) continue;
     const conf = kp.score ?? 1;
-    if (conf < 0.2) continue;
+    if (conf < 0.4) continue;
 
     const { x, y } = toCanvas(kp);
     const radius = 7;

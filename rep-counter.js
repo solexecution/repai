@@ -9,7 +9,7 @@
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const MIN_CONFIDENCE = 0.25;
+const MIN_CONFIDENCE = 0.4;
 
 function getDist(p1, p2) {
   return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
@@ -128,7 +128,7 @@ class BaseCounter {
 
   update(keypoints) {
     const { progress, conf, raw } = this.calculateProgress(keypoints);
-    if (conf < 0.25) return { repCompleted: false, countAdded: 0, phase: this.phase, progress: this.phase === 'moving' ? this.maxProgress : 0, raw, confidence: conf };
+    if (conf < MIN_CONFIDENCE) return { repCompleted: false, countAdded: 0, phase: this.phase, progress: this.phase === 'moving' ? this.maxProgress : 0, raw, confidence: conf };
 
     let repCompleted = false;
     let countAdded = 0;
