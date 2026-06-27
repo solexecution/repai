@@ -131,7 +131,7 @@ class App {
     // ── State ───────────────────────────────────────────────────
     this.exercise        = 'pushup';
     this.isWorkoutActive = false;
-    this.facingMode      = 'environment';
+    this.facingMode      = 'user';
     this.stream          = null;
     this.animFrameId     = null;
     this.detectionActive = false;
