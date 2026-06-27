@@ -7,7 +7,7 @@
  *    served from cache when offline
  */
 
-const CACHE_VERSION = 'repcount-v1';
+const CACHE_VERSION = 'repai-v2';
 
 const APP_SHELL = [
   './index.html',

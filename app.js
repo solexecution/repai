@@ -238,7 +238,7 @@ class App {
 
     const constraints = {
       video: {
-        facingMode: { ideal: this.facingMode },
+        facingMode: this.facingMode,
         width:      { ideal: 1920 },
         height:     { ideal: 1080 },
         frameRate:  { ideal: 30 },
