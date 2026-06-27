@@ -21,8 +21,13 @@
 
   /* Pullup accent: electric teal-green */
   --accent-pull:       #00f2c3;
-  --accent-pull-glow:  rgba(0,242,195,0.35);
+  --accent-pull-glow: rgba(0, 242, 195, 0.4);
   --accent-pull-dim:   rgba(0,242,195,0.15);
+
+  /* Squat accent: electric gold */
+  --accent-squat:      #ffd700;
+  --accent-squat-glow: rgba(255, 215, 0, 0.4);
+  --accent-squat-dim:  rgba(255, 215, 0, 0.15);
 
   /* Situp accent: neon orange */
   --accent-situp:       #ff5e62;
@@ -214,6 +219,7 @@ html, body {
 
 .ex-btn[data-ex="pushup"].active { background: var(--accent-push); box-shadow: 0 0 18px var(--accent-push-glow); }
 .ex-btn[data-ex="pullup"].active { background: var(--accent-pull); box-shadow: 0 0 18px var(--accent-pull-glow); }
+.ex-btn[data-ex="squat"].active { background: var(--accent-squat); box-shadow: 0 0 18px var(--accent-squat-glow); }
 .ex-btn[data-ex="situp"].active { background: var(--accent-situp); box-shadow: 0 0 18px var(--accent-situp-glow); }
 .ex-btn[data-ex="plank"].active { background: var(--accent-plank); box-shadow: 0 0 18px var(--accent-plank-glow); }
 

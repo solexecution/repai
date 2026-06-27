@@ -31,6 +31,17 @@ const EXERCISE_CONFIG = {
       down: 'HANGING',
     },
   },
+  squat: {
+    label:     'SQUATS',
+    icon:      '🦵',
+    accent:    '#f72585',
+    accentGlow:'rgba(247,37,133,0.45)',
+    guide:     'Position yourself sideways to the camera',
+    phase: {
+      up:   'STANDING',
+      down: 'SQUATTING',
+    },
+  },
   situp: {
     label:     'SITUPS',
     icon:      '🔥',
@@ -163,6 +174,7 @@ class App {
     this.counters    = {
       pushup: new PushupCounter(),
       pullup: new PullupCounter(),
+      squat:  new SquatCounter(),
       situp:  new SitupCounter(),
       plank:  new PlankCounter(),
     };
@@ -731,14 +743,19 @@ class App {
     // Map to threshold adjustments: higher sensitivity = tighter (smaller) angles
     const pushCounter = this.counters.pushup;
     const pullCounter = this.counters.pullup;
+    const squatCounter = this.counters.squat;
 
     // Pushup thresholds: UP 140–165, DOWN 75–100
-    pushCounter.UP_THRESHOLD   = 140 + ((val / 100) * 25);   // 140 @ 0%, 165 @ 100%
-    pushCounter.DOWN_THRESHOLD = 100 - ((val / 100) * 25);   // 100 @ 0%,  75 @ 100%
+    pushCounter.UP_THRESHOLD   = 140 + ((val / 100) * 25);
+    pushCounter.DOWN_THRESHOLD = 100 - ((val / 100) * 25);
 
     // Pullup thresholds: DOWN 130–160, UP 45–70
-    pullCounter.DOWN_THRESHOLD = 130 + ((val / 100) * 30);   // 130 @ 0%, 160 @ 100%
-    pullCounter.UP_THRESHOLD   = 70  - ((val / 100) * 25);   //  70 @ 0%,  45 @ 100%
+    pullCounter.DOWN_THRESHOLD = 130 + ((val / 100) * 30);
+    pullCounter.UP_THRESHOLD   = 70  - ((val / 100) * 25);
+
+    // Squat thresholds: UP 150-170, DOWN 70-100
+    squatCounter.REST_ANGLE = 150 + ((val / 100) * 20);
+    squatCounter.MAX_ANGLE  = 100 - ((val / 100) * 30);
   }
 
   // ─── UI Bindings ─────────────────────────────────────────────────────────────
@@ -803,6 +820,21 @@ class App {
         flipBtn.style.pointerEvents = 'none';
         await this._flipCamera();
         flipBtn.style.pointerEvents = '';
+      });
+    }
+
+    // Settings Panel Toggle
+    const settingsBtn = this.$('settings-btn');
+    const closeSettingsBtn = this.$('close-settings-btn');
+    if (settingsBtn) {
+      settingsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.settingsPanel.classList.add('open');
+      });
+    }
+    if (closeSettingsBtn) {
+      closeSettingsBtn.addEventListener('click', () => {
+        this.settingsPanel.classList.remove('open');
       });
     }
 

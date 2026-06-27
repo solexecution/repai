@@ -153,6 +153,10 @@ class VoiceAssistant {
       document.getElementById('btn-situp').click();
       handled = true;
     }
+    else if (cmd.includes('squat') || cmd.includes('squad')) {
+      document.getElementById('btn-squat').click();
+      handled = true;
+    }
     else if (cmd.includes('plank')) {
       document.getElementById('btn-plank').click();
       handled = true;

@@ -77,6 +77,30 @@ function getBestTorso(keypoints) {
   return bestTorso;
 }
 
+// Find the leg with highest confidence
+function getBestLeg(keypoints) {
+  const sides = [
+    { hip: 11, knee: 13, ankle: 15 },
+    { hip: 12, knee: 14, ankle: 16 },
+  ];
+  let bestLeg = null;
+  let bestConf = -1;
+
+  for (const s of sides) {
+    const hip   = getKP(keypoints, s.hip);
+    const knee  = getKP(keypoints, s.knee);
+    const ankle = getKP(keypoints, s.ankle);
+    if (!hip || !knee || !ankle) continue;
+
+    const conf = (hip.score + knee.score + ankle.score) / 3;
+    if (conf > bestConf) {
+      bestConf = conf;
+      bestLeg  = { hip, knee, ankle, confidence: conf };
+    }
+  }
+  return bestLeg;
+}
+
 // ─── Base Counter ─────────────────────────────────────────────────────────────
 
 class BaseCounter {
@@ -392,5 +416,52 @@ class PlankCounter {
       confidence: torso.confidence,
       raw: rawAngle
     };
+  }
+}
+
+// ─── Squat Counter ────────────────────────────────────────────────────────────
+
+class SquatCounter extends BaseCounter {
+  constructor() {
+    super();
+    this.MIN_REP_MS = 1200;
+    this.REST_ANGLE = 160; 
+    this.MAX_ANGLE  = 90;
+    this.repStartX  = null;
+  }
+
+  reset() {
+    super.reset();
+    this.repStartX = null;
+  }
+
+  calculateProgress(keypoints) {
+    const leg = getBestLeg(keypoints);
+    if (!leg) return { progress: 0, conf: 0, raw: null };
+
+    const angle = calcAngle(
+      { x: leg.hip.x,   y: leg.hip.y   },
+      { x: leg.knee.x,  y: leg.knee.y  },
+      { x: leg.ankle.x, y: leg.ankle.y }
+    );
+
+    // Map 160° -> 0.0, and 90° -> 1.0
+    let prog = (this.REST_ANGLE - angle) / (this.REST_ANGLE - this.MAX_ANGLE);
+    prog = Math.max(0, Math.min(1, prog));
+
+    return { progress: prog, conf: leg.confidence, raw: angle };
+  }
+
+  onMoveStart(keypoints) {
+    const leg = getBestLeg(keypoints);
+    if (leg) this.repStartX = leg.ankle.x;
+  }
+
+  isValidMovement(keypoints) {
+    // If they walk away during a rep, invalidate it
+    const leg = getBestLeg(keypoints);
+    if (!leg || this.repStartX === null) return true;
+    const legLength = getDist(leg.hip, leg.knee) + getDist(leg.knee, leg.ankle);
+    return Math.abs(leg.ankle.x - this.repStartX) < (legLength * 0.5);
   }
 }
