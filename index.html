@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#080b14" />
+
+  <title>RepCount — AI Exercise Counter</title>
+  <meta name="description" content="Offline AI-powered pushup and pullup rep counter. Works fully on-device with no data sent anywhere." />
+
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="./icons/icon-512.png" />
+
+  <!-- Fonts & Styles -->
+  <link rel="stylesheet" href="./style.css" />
+
+  <!--
+    TensorFlow.js + MoveNet pose detection.
+    Loaded from CDN; the Service Worker caches these on first load
+    so the app works 100% offline after that.
+  -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.3/dist/pose-detection.min.js"></script>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       LOADING SCREEN
+  ════════════════════════════════════════════════════════════ -->
+  <div id="loading-screen">
+    <div class="loading-logo">🏋️</div>
+    <div class="loading-title">RepCount</div>
+    <p class="loading-subtitle" id="loading-subtitle">Initialising…</p>
+    <div class="loading-bar-wrap">
+      <div class="loading-bar" id="loading-bar"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       CAMERA PERMISSION SCREEN
+  ════════════════════════════════════════════════════════════ -->
+  <div id="permission-screen">
+    <div class="perm-icon">📷</div>
+    <h1 class="perm-title">Camera Access Required</h1>
+    <p class="perm-desc">
+      RepCount needs your camera to detect your body position and count reps.
+      All processing happens on-device — nothing is uploaded or stored.
+    </p>
+    <button class="perm-btn" id="grant-camera-btn">Enable Camera</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MAIN CAMERA + CANVAS LAYER
+  ════════════════════════════════════════════════════════════ -->
+  <div id="camera-container">
+
+    <!-- Hidden video source element -->
+    <video id="camera-feed" autoplay playsinline muted></video>
+
+    <!-- Canvas — receives the video frames + skeleton overlay -->
+    <canvas id="skeleton-canvas"></canvas>
+
+    <!-- Guide overlay (shown when no person is detected) -->
+    <div id="guide-overlay">
+      <div class="guide-silhouette">💪</div>
+      <div class="guide-text">Position yourself sideways to the camera</div>
+    </div>
+
+    <!-- ── TOP BAR ────────────────────────────────────────────── -->
+    <header id="top-bar">
+
+      <!-- Logo -->
+      <div id="logo">
+        <div id="logo-icon">🏋️</div>
+        <span id="logo-text">RepCount</span>
+      </div>
+
+      <!-- Exercise toggle -->
+      <div id="exercise-toggle" role="group" aria-label="Select exercise">
+        <button class="ex-btn active" data-ex="pushup" id="btn-pushup" aria-pressed="true">
+          💪 PUSH
+        </button>
+        <button class="ex-btn" data-ex="pullup" id="btn-pullup" aria-pressed="false">
+          🏋️ PULL
+        </button>
+        <button class="ex-btn" data-ex="situp" id="btn-situp" aria-pressed="false">
+          🔥 SIT
+        </button>
+        <button class="ex-btn" data-ex="plank" id="btn-plank" aria-pressed="false">
+          🧱 PLANK
+        </button>
+      </div>
+
+      <!-- Icon buttons -->
+      <button class="icon-btn" id="settings-btn" title="Settings" aria-label="Settings">⚙️</button>
+      <button class="icon-btn" id="flip-btn" title="Flip Camera" aria-label="Flip camera">🔄</button>
+      <button class="icon-btn" id="history-btn" title="History" aria-label="Workout history">📊</button>
+    </header>
+
+    <!-- ── REP HUD (centred over camera) ────────────────────────── -->
+    <div id="hud-overlay" aria-live="polite" aria-atomic="true">
+
+      <!-- Breathing Pacer -->
+      <div id="breathing-pacer" class="hidden">
+        <span id="breath-icon">🔵</span> <span id="breath-text">INHALE</span>
+      </div>
+
+      <!-- The main rep counter bubble -->
+      <div id="rep-bubble" class="pushup-mode" role="status" aria-label="Rep count">
+        <div id="rep-count">0</div>
+        <div id="rep-label">REPS</div>
+      </div>
+
+      <!-- Phase label (UP / DOWN) -->
+      <div id="phase-indicator">—</div>
+
+      <!-- Elbow angle (optional) -->
+      <div id="angle-display"></div>
+
+    </div>
+
+    <!-- ── BOTTOM BAR ────────────────────────────────────────────── -->
+    <footer id="bottom-bar">
+
+      <!-- Detection status -->
+      <div id="status-pill" role="status">
+        <div id="status-dot" class="loading"></div>
+        <span id="status-text">Loading…</span>
+      </div>
+
+      <!-- Workout timer -->
+      <div id="workout-timer" aria-label="Workout time">0:00</div>
+
+      <div class="bar-spacer"></div>
+
+      <!-- Current set badge -->
+      <div id="set-badge">SET 1</div>
+
+      <!-- Finish Set -->
+      <button class="action-btn" id="finish-btn" title="End this set and save to history">
+        ✅ FINISH SET
+      </button>
+
+      <!-- Start / Pause / Resume -->
+      <button class="action-btn" id="start-btn" class="pushup-mode">
+        ▶ START
+      </button>
+
+    </footer>
+
+  </div><!-- /#camera-container -->
+
+  <!-- ═══════════════════════════════════════════════════════════
+       DASHBOARD / CALENDAR OVERLAY (Full Screen)
+  ════════════════════════════════════════════════════════════ -->
+  <div id="dashboard-overlay" class="hidden">
+    <div class="dashboard-header">
+      <h2>📊 Workout History</h2>
+      <button class="icon-btn" id="close-dashboard-btn" aria-label="Close">❌</button>
+    </div>
+    
+    <div class="dashboard-content">
+      <div class="heatmap-section">
+        <div class="heatmap-scroll">
+          <div id="heatmap-grid"></div>
+        </div>
+        <div class="heatmap-legend">
+          <span>Less</span>
+          <div class="legend-dot lvl-0"></div>
+          <div class="legend-dot lvl-1"></div>
+          <div class="legend-dot lvl-2"></div>
+          <div class="legend-dot lvl-3"></div>
+          <div class="legend-dot lvl-4"></div>
+          <span>More</span>
+        </div>
+      </div>
+      
+      <div class="day-details-section">
+        <h3 id="detail-date">Today</h3>
+        <div id="detail-stats">
+          <!-- Sets will be populated here -->
+          <p class="empty-stats">No workouts on this date.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SETTINGS PANEL (slides in from left)
+  ════════════════════════════════════════════════════════════ -->
+  <aside id="settings-panel" role="complementary" aria-label="Settings">
+    <div class="settings-title">⚙️ Settings</div>
+
+    <!-- Audio -->
+    <div class="setting-row">
+      <div class="toggle-row">
+        <span class="setting-label">Rep Sound</span>
+        <label class="toggle">
+          <input type="checkbox" id="audio-toggle" checked />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <p class="setting-desc">Plays a beep when a rep is counted.</p>
+    </div>
+
+    <!-- Show angle -->
+    <div class="setting-row">
+      <div class="toggle-row">
+        <span class="setting-label">Show Angle</span>
+        <label class="toggle">
+          <input type="checkbox" id="angle-toggle" checked />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <p class="setting-desc">Displays elbow angle on screen.</p>
+    </div>
+
+    <!-- Strict Mode -->
+    <div class="setting-row">
+      <div class="toggle-row">
+        <span class="setting-label">Strict Form</span>
+        <label class="toggle">
+          <input type="checkbox" id="strict-toggle" checked />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <p class="setting-desc">Enforce perfect reps and allow fractional scoring for half-reps.</p>
+    </div>
+
+    <!-- Sensitivity -->
+    <div class="setting-row">
+      <span class="setting-label">Sensitivity</span>
+      <div class="slider-row">
+        <input type="range" id="sensitivity-slider" class="setting-slider"
+               min="0" max="100" step="5" value="50" />
+        <span class="slider-value" id="sensitivity-value">50%</span>
+      </div>
+      <p class="setting-desc">
+        Higher = requires a deeper bend to count a rep. Lower = counts partial reps.
+      </p>
+    </div>
+
+    <!-- About -->
+    <div class="setting-row">
+      <span class="setting-label">About</span>
+      <p class="setting-desc">
+        RepCount v1.0 — Fully offline.<br>
+        AI model: MoveNet Lightning.<br>
+        No data leaves your device.
+      </p>
+    </div>
+  </aside>
+
+</div><!-- /#app -->
+
+<!-- App scripts (loaded after DOM) -->
+<script src="./rep-counter.js"></script>
+<script src="./pose-engine.js"></script>
+<script src="./app.js"></script>
+
+</body>
+</html>

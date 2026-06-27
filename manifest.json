@@ -1,0 +1,27 @@
+{
+  "name": "RepCount — AI Exercise Counter",
+  "short_name": "RepCount",
+  "description": "Offline AI-powered pushup and pullup rep counter using your camera",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#080b14",
+  "theme_color": "#080b14",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["health", "fitness", "sports"],
+  "lang": "en",
+  "dir": "ltr"
+}
