@@ -871,6 +871,15 @@ class App {
       });
     }
 
+    // Hide settings if clicked outside
+    document.addEventListener('click', (e) => {
+      if (this.settingsPanel.classList.contains('open')) {
+        if (!this.settingsPanel.contains(e.target) && !settingsBtn.contains(e.target)) {
+          this.settingsPanel.classList.remove('open');
+        }
+      }
+    });
+
     // Panels: History (Dashboard)
     const histBtn = this.$('history-btn');
     if (histBtn) {

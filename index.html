@@ -89,30 +89,7 @@
     <!-- ── TOP BAR ────────────────────────────────────────────── -->
     <header id="top-bar">
 
-      <!-- Logo -->
-      <div id="logo">
-        <div id="logo-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 4v16M17.5 4v16M4 8h16M4 16h16"/></svg></div>
-        <span id="logo-text">RepAI</span>
-      </div>
 
-      <!-- Exercise toggle -->
-      <div id="exercise-toggle" role="group" aria-label="Select exercise">
-        <button class="ex-btn active" data-ex="pushup" id="btn-pushup" aria-pressed="true">
-          PUSH
-        </button>
-        <button class="ex-btn" data-ex="pullup" id="btn-pullup" aria-pressed="false">
-          PULL
-        </button>
-        <button class="ex-btn" data-ex="squat" id="btn-squat" aria-pressed="false">
-          SQUAT
-        </button>
-        <button class="ex-btn" data-ex="situp" id="btn-situp" aria-pressed="false">
-          SIT
-        </button>
-        <button class="ex-btn" data-ex="plank" id="btn-plank" aria-pressed="false">
-          PLANK
-        </button>
-      </div>
 
       <div id="voice-indicator" class="voice-inactive" title="Voice Commands (Disabled)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg></div>
       <button class="icon-btn" id="layout-btn" title="Change Layout" aria-label="Change Layout"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="12" y1="3" x2="12" y2="21"/></svg></button>
@@ -121,6 +98,25 @@
       <button class="icon-btn" id="flip-btn" title="Flip Camera" aria-label="Flip camera"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
       <button class="icon-btn" id="history-btn" title="History" aria-label="Workout history"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></button>
     </header>
+
+    <!-- Exercise toggle -->
+    <div id="exercise-toggle" role="group" aria-label="Select exercise">
+      <button class="ex-btn active" data-ex="pushup" id="btn-pushup" aria-pressed="true">
+        PUSH
+      </button>
+      <button class="ex-btn" data-ex="pullup" id="btn-pullup" aria-pressed="false">
+        PULL
+      </button>
+      <button class="ex-btn" data-ex="squat" id="btn-squat" aria-pressed="false">
+        SQUAT
+      </button>
+      <button class="ex-btn" data-ex="situp" id="btn-situp" aria-pressed="false">
+        SIT
+      </button>
+      <button class="ex-btn" data-ex="plank" id="btn-plank" aria-pressed="false">
+        PLANK
+      </button>
+    </div>
 
     <!-- ── REP HUD (centred over camera) ────────────────────────── -->
     <div id="hud-overlay" aria-live="polite" aria-atomic="true">

@@ -237,9 +237,13 @@ html, body {
 
 /* Exercise toggle */
 #exercise-toggle {
+  position: absolute;
+  bottom: calc(var(--bar-h) + 20px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
   display: flex;
   align-items: center;
-  margin: 0 auto;
   background: rgba(0,0,0,0.4);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
