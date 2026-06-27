@@ -58,7 +58,7 @@ const EXERCISE_CONFIG = {
 // ─── Workout DB ──────────────────────────────────────────────────────────────
 class WorkoutDB {
   constructor() {
-    this.key = 'repcount_history_v2';
+    this.key = 'repai_history_v2';
     this.data = this._load();
   }
   

@@ -1,6 +1,6 @@
 {
-  "name": "RepCount — AI Exercise Counter",
-  "short_name": "RepCount",
+  "name": "RepAI — AI Exercise Counter",
+  "short_name": "RepAI",
   "description": "Offline AI-powered pushup and pullup rep counter using your camera",
   "start_url": "./index.html",
   "display": "fullscreen",
