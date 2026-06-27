@@ -219,7 +219,11 @@ class App {
   // ─── Engine Callbacks ─────────────────────────────────────────────────────────
 
   async _init() {
+    if (this.isInitializing) return;
+    this.isInitializing = true;
+    
     this._registerSW();
+    this._setProgress(20);
     this._bindUI();
     this._applyExerciseTheme();
     this._setProgress(10);
@@ -267,6 +271,8 @@ class App {
 
     // Start the detection loop (but only count if workout active)
     this._startDetectionLoop();
+    
+    this.isInitializing = false;
   }
 
   _registerSW() {
@@ -334,6 +340,10 @@ class App {
   // ─── Detection Loop ──────────────────────────────────────────────────────────
 
   _startDetectionLoop() {
+    if (this.animFrameId) {
+      cancelAnimationFrame(this.animFrameId);
+    }
+    
     const loop = async () => {
       if (this.videoEl.readyState >= 2 && this.videoEl.videoWidth > 0) {
         // Resize canvas to match display size (responsive)
