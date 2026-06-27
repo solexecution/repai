@@ -114,7 +114,7 @@ const ARM_KEYPOINTS = new Set([5, 6, 7, 8, 9, 10]); // shoulders + elbows + wris
  * @param {string} accentColor – CSS color for highlighted joints
  * @returns {{ sx,sy,sw,sh,scaleX,scaleY }} crop transform (for external use)
  */
-function drawSkeletonOnCanvas(ctx, video, keypoints, accentColor = '#4facfe') {
+function drawSkeletonOnCanvas(ctx, video, keypoints, accentColor = '#4facfe', trackedIndices = null) {
   const { canvas } = ctx;
   const cw = canvas.width;
   const ch = canvas.height;
@@ -137,7 +137,7 @@ function drawSkeletonOnCanvas(ctx, video, keypoints, accentColor = '#4facfe') {
   }
   ctx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch);
 
-  if (!keypoints || keypoints.length === 0) {
+  if (!keypoints || keypoints.length === 0 || !trackedIndices) {
     return { sx, sy, sw, sh, scaleX: cw / sw, scaleY: ch / sh };
   }
 
@@ -154,6 +154,8 @@ function drawSkeletonOnCanvas(ctx, video, keypoints, accentColor = '#4facfe') {
   ctx.lineCap = 'round';
 
   for (const [i, j] of SKELETON_CONNECTIONS) {
+    if (!trackedIndices.has(i) || !trackedIndices.has(j)) continue;
+
     const a = keypoints[i];
     const b = keypoints[j];
     if (!a || !b) continue;
@@ -161,22 +163,13 @@ function drawSkeletonOnCanvas(ctx, video, keypoints, accentColor = '#4facfe') {
     const confB = b.score ?? 1;
     if (confA < 0.2 || confB < 0.2) continue;
 
-    const isArmBone = ARM_KEYPOINTS.has(i) && ARM_KEYPOINTS.has(j);
     const alpha = Math.min(confA, confB);
 
-    if (isArmBone) {
-      ctx.strokeStyle = accentColor;
-      ctx.lineWidth   = 4;
-      ctx.globalAlpha = alpha * 0.9;
-      // Glow
-      ctx.shadowColor = accentColor;
-      ctx.shadowBlur  = 12;
-    } else {
-      ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-      ctx.lineWidth   = 3;
-      ctx.globalAlpha = alpha * 0.6;
-      ctx.shadowBlur  = 0;
-    }
+    ctx.strokeStyle = accentColor;
+    ctx.lineWidth   = 4;
+    ctx.globalAlpha = alpha * 0.9;
+    ctx.shadowColor = accentColor;
+    ctx.shadowBlur  = 12;
 
     const pa = toCanvas(a);
     const pb = toCanvas(b);
@@ -190,39 +183,31 @@ function drawSkeletonOnCanvas(ctx, video, keypoints, accentColor = '#4facfe') {
   ctx.shadowBlur = 0;
 
   for (let i = 0; i < keypoints.length; i++) {
+    if (!trackedIndices.has(i)) continue;
+
     const kp = keypoints[i];
     if (!kp) continue;
     const conf = kp.score ?? 1;
     if (conf < 0.2) continue;
 
     const { x, y } = toCanvas(kp);
-    const isArm = ARM_KEYPOINTS.has(i);
-    const radius = isArm ? 7 : 5;
+    const radius = 7;
 
     ctx.globalAlpha = Math.min(conf * 1.2, 1);
-
-    if (isArm) {
-      // Glowing accent dot
-      ctx.shadowColor = accentColor;
-      ctx.shadowBlur  = 14;
-      ctx.fillStyle   = accentColor;
-    } else {
-      ctx.shadowBlur = 0;
-      ctx.fillStyle  = 'rgba(255,255,255,0.85)';
-    }
+    ctx.shadowColor = accentColor;
+    ctx.shadowBlur  = 14;
+    ctx.fillStyle   = accentColor;
 
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, Math.PI * 2);
     ctx.fill();
 
-    // White outline ring for arm joints
-    if (isArm) {
-      ctx.shadowBlur  = 0;
-      ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-      ctx.lineWidth   = 2;
-      ctx.globalAlpha = conf * 0.7;
-      ctx.stroke();
-    }
+    // White outline ring for tracked joints
+    ctx.shadowBlur  = 0;
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+    ctx.lineWidth   = 2;
+    ctx.globalAlpha = conf * 0.7;
+    ctx.stroke();
   }
 
   ctx.globalAlpha = 1;
