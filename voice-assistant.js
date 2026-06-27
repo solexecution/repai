@@ -39,13 +39,6 @@ class VoiceAssistant {
       this.recognizer = new this.model.KaldiRecognizer(16000);
       this.recognizer.setWords(true);
       
-      this.recognizer.on("result", (message) => {
-        const res = message.result;
-        if (res && res.text) {
-          this._parseCommand(res.text.toLowerCase().trim());
-        }
-      });
-      
       this.isModelLoaded = true;
       if (this.indicator) {
         this.indicator.classList.remove('voice-loading');
@@ -85,7 +78,25 @@ class VoiceAssistant {
       this.scriptNode.onaudioprocess = (event) => {
         if (!this.isActive) return;
         try {
-          this.recognizer.acceptWaveform(event.inputBuffer.getChannelData(0));
+          const buffer = event.inputBuffer.getChannelData(0);
+          
+          // Calculate volume for visual clue
+          let sum = 0;
+          for (let i = 0; i < buffer.length; i++) sum += buffer[i] * buffer[i];
+          const rms = Math.sqrt(sum / buffer.length);
+          const vol = Math.min(1, rms * 15); // Scale volume up for UI
+          
+          if (this.indicator) {
+            // Pulse the indicator based on volume
+            this.indicator.style.boxShadow = `0 0 ${10 + vol * 30}px rgba(255, 51, 102, ${0.4 + vol})`;
+          }
+
+          if (this.recognizer.acceptWaveform(buffer)) {
+            const res = this.recognizer.result();
+            if (res && res.text) {
+              this._parseCommand(res.text.toLowerCase().trim());
+            }
+          }
         } catch(e) {
           console.error("Error processing audio", e);
         }

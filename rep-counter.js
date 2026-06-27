@@ -128,7 +128,7 @@ class BaseCounter {
 
   update(keypoints) {
     const { progress, conf, raw } = this.calculateProgress(keypoints);
-    if (conf === 0) return { repCompleted: false, countAdded: 0, phase: this.phase, progress: 0, raw };
+    if (conf < 0.25) return { repCompleted: false, countAdded: 0, phase: this.phase, progress: this.phase === 'moving' ? this.maxProgress : 0, raw, confidence: conf };
 
     let repCompleted = false;
     let countAdded = 0;
