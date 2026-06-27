@@ -276,10 +276,10 @@ class App {
 
     const constraints = {
       video: {
-        facingMode: this.facingMode,
-        width:      { ideal: 1920 },
-        height:     { ideal: 1080 },
-        frameRate:  { ideal: 30 },
+        facingMode: { exact: this.facingMode },
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+        frameRate: { ideal: 15 } // Force higher exposure/sharpness
       },
       audio: false,
     };
@@ -777,6 +777,25 @@ class App {
     const finishBtn = this.$('finish-btn');
     if (finishBtn) finishBtn.addEventListener('click', () => this._finishSet());
 
+    // Snapshot button
+    const snapBtn = this.$('snapshot-btn');
+    if (snapBtn) {
+      snapBtn.addEventListener('click', () => {
+        if (!this.videoEl) return;
+        const canvas = document.createElement('canvas');
+        canvas.width = this.videoEl.videoWidth;
+        canvas.height = this.videoEl.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(this.videoEl, 0, 0, canvas.width, canvas.height);
+        const url = canvas.toDataURL('image/jpeg', 1.0);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `repai-snapshot-${Date.now()}.jpg`;
+        a.click();
+        this.voice._showToast("Snapshot Saved!");
+      });
+    }
+
     // Camera flip
     const flipBtn = this.$('flip-btn');
     if (flipBtn) {
@@ -883,6 +902,21 @@ class App {
         this._saveSettings();
       });
       this._applySensitivity(this.settings.sensitivity);
+    }
+
+    // Export Data
+    const exportBtn = this.$('export-data-btn');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => {
+        const dataStr = JSON.stringify(this.db.data, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'repai-history-export.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      });
     }
 
     // Long-press rep count to reset

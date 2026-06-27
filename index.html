@@ -34,7 +34,7 @@
        LOADING SCREEN
   ════════════════════════════════════════════════════════════ -->
   <div id="loading-screen">
-    <div class="loading-logo">🏋️</div>
+    <div class="loading-logo"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 4v16M17.5 4v16M4 8h16M4 16h16"/></svg></div>
     <div class="loading-title">RepAI</div>
     <p class="loading-subtitle" id="loading-subtitle">Initialising…</p>
     <div class="loading-bar-wrap">
@@ -46,7 +46,7 @@
        CAMERA PERMISSION SCREEN
   ════════════════════════════════════════════════════════════ -->
   <div id="permission-screen">
-    <div class="perm-icon">📷</div>
+    <div class="perm-icon"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
     <h1 class="perm-title">Camera Access Required</h1>
     <p class="perm-desc">
       RepAI needs your camera to detect your body position and count reps.
@@ -66,7 +66,7 @@
         <video id="camera-feed" autoplay playsinline muted></video>
         <canvas id="skeleton-canvas"></canvas>
         <div id="guide-overlay">
-          <div class="guide-silhouette">💪</div>
+          <div class="guide-silhouette"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div>
           <div class="guide-text">Position yourself sideways to the camera</div>
         </div>
       </div>
@@ -83,31 +83,31 @@
 
       <!-- Logo -->
       <div id="logo">
-        <div id="logo-icon">🏋️</div>
+        <div id="logo-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 4v16M17.5 4v16M4 8h16M4 16h16"/></svg></div>
         <span id="logo-text">RepAI</span>
       </div>
 
       <!-- Exercise toggle -->
       <div id="exercise-toggle" role="group" aria-label="Select exercise">
         <button class="ex-btn active" data-ex="pushup" id="btn-pushup" aria-pressed="true">
-          💪 PUSH
+          PUSH
         </button>
         <button class="ex-btn" data-ex="pullup" id="btn-pullup" aria-pressed="false">
-          🏋️ PULL
+          PULL
         </button>
         <button class="ex-btn" data-ex="situp" id="btn-situp" aria-pressed="false">
-          🔥 SIT
+          SIT
         </button>
         <button class="ex-btn" data-ex="plank" id="btn-plank" aria-pressed="false">
-          🧱 PLANK
+          PLANK
         </button>
       </div>
 
-      <!-- Icon buttons -->
-      <div id="voice-indicator" class="voice-inactive" title="Voice Commands (Disabled)">🎙️</div>
-      <button class="icon-btn" id="settings-btn" title="Settings" aria-label="Settings">⚙️</button>
-      <button class="icon-btn" id="flip-btn" title="Flip Camera" aria-label="Flip camera">🔄</button>
-      <button class="icon-btn" id="history-btn" title="History" aria-label="Workout history">📊</button>
+      <div id="voice-indicator" class="voice-inactive" title="Voice Commands (Disabled)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg></div>
+      <button class="icon-btn" id="snapshot-btn" title="Take Snapshot" aria-label="Take snapshot"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button>
+      <button class="icon-btn" id="settings-btn" title="Settings" aria-label="Settings"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+      <button class="icon-btn" id="flip-btn" title="Flip Camera" aria-label="Flip camera"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
+      <button class="icon-btn" id="history-btn" title="History" aria-label="Workout history"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></button>
     </header>
 
     <!-- ── REP HUD (centred over camera) ────────────────────────── -->
@@ -115,7 +115,7 @@
 
       <!-- Breathing Pacer -->
       <div id="breathing-pacer" class="hidden">
-        <span id="breath-icon">🔵</span> <span id="breath-text">INHALE</span>
+        <span id="breath-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span> <span id="breath-text">INHALE</span>
       </div>
 
       <!-- The main rep counter bubble -->
@@ -269,6 +269,15 @@
 
     <!-- About -->
     <div class="setting-row">
+      <span class="setting-label">Data</span>
+      <button id="export-data-btn" class="action-btn" style="margin-top: 10px; font-size: 14px; padding: 10px; width: 100%;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 5px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export History (JSON)
+      </button>
+    </div>
+
+    <!-- About -->
+    <div class="setting-row">
       <span class="setting-label">About</span>
       <p class="setting-desc">
         RepCount v1.0 — Fully offline.<br>
@@ -281,6 +290,7 @@
 </div><!-- /#app -->
 
 <!-- App scripts (loaded after DOM) -->
+<script src="./vosk/vosk.js"></script>
 <script src="./rep-counter.js"></script>
 <script src="./pose-engine.js"></script>
 <script src="./voice-assistant.js"></script>

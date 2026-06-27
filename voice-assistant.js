@@ -1,83 +1,117 @@
 class VoiceAssistant {
   constructor(app) {
     this.app = app;
-    this.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    this.recognition = null;
     this.isActive = false;
     this.indicator = document.getElementById('voice-indicator');
     this.toast = document.getElementById('voice-toast');
     this.toastTimeout = null;
-
-    if (this.SpeechRecognition) {
-      this.recognition = new this.SpeechRecognition();
-      this.recognition.continuous = true;
-      this.recognition.interimResults = false;
-      this.recognition.lang = 'en-US';
-
-      this.recognition.onresult = this._handleResult.bind(this);
-      this.recognition.onerror = this._handleError.bind(this);
-      this.recognition.onend = this._handleEnd.bind(this);
-    } else {
-      console.warn("Speech Recognition API not supported in this browser.");
-    }
+    
+    this.model = null;
+    this.recognizer = null;
+    this.audioContext = null;
+    this.mediaStreamSource = null;
+    this.scriptNode = null;
+    this.stream = null;
+    this.isModelLoaded = false;
   }
 
   isSupported() {
-    return !!this.SpeechRecognition;
+    return true; // We are forcing offline WASM
   }
 
-  start() {
-    if (!this.recognition || this.isActive) return;
+  async initModel() {
+    if (this.isModelLoaded) return;
     try {
-      this.recognition.start();
+      this._showToast('Loading Offline Voice Model... (may take a moment)');
+      
+      // Ensure Vosk is loaded
+      if (typeof window.Vosk === 'undefined') {
+        throw new Error("Vosk library not loaded");
+      }
+
+      // Initialize the model from the local directory
+      this.model = await window.Vosk.createModel('./vosk/vosk-model-small-en-us-0.15');
+      this.recognizer = new this.model.KaldiRecognizer(16000);
+      this.recognizer.setWords(true);
+      
+      this.recognizer.on("result", (message) => {
+        const res = message.result;
+        if (res && res.text) {
+          this._parseCommand(res.text.toLowerCase().trim());
+        }
+      });
+      
+      this.isModelLoaded = true;
+      this._showToast('Voice Model Loaded!');
+    } catch(err) {
+      console.error("Vosk initialization error", err);
+      this._showToast('Failed to load voice model');
+    }
+  }
+
+  async start() {
+    if (this.isActive) return;
+    try {
+      if (!this.isModelLoaded) {
+        await this.initModel();
+      }
+      
+      this.stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          channelCount: 1,
+          sampleRate: 16000
+        } 
+      });
+      this.audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+      this.mediaStreamSource = this.audioContext.createMediaStreamSource(this.stream);
+      
+      this.scriptNode = this.audioContext.createScriptProcessor(4096, 1, 1);
+      this.scriptNode.onaudioprocess = (event) => {
+        if (!this.isActive) return;
+        try {
+          this.recognizer.acceptWaveform(event.inputBuffer.getChannelData(0));
+        } catch(e) {
+          console.error("Error processing audio", e);
+        }
+      };
+      
+      this.mediaStreamSource.connect(this.scriptNode);
+      this.scriptNode.connect(this.audioContext.destination);
+      
       this.isActive = true;
       if (this.indicator) {
         this.indicator.classList.add('voice-active');
         this.indicator.title = 'Voice Commands (Listening)';
       }
-      this._showToast('🎙️ Voice Assistant Active');
+      this._showToast('Voice Assistant Active');
     } catch (e) {
-      console.error('Speech recognition error', e);
-    }
-  }
-
-  stop() {
-    if (!this.recognition || !this.isActive) return;
-    this.isActive = false;
-    this.recognition.stop();
-    if (this.indicator) {
-      this.indicator.classList.remove('voice-active');
-      this.indicator.title = 'Voice Commands (Disabled)';
-    }
-    this._showToast('Voice Assistant Paused');
-  }
-
-  _handleResult(event) {
-    const lastResult = event.results[event.results.length - 1];
-    if (lastResult.isFinal) {
-      const command = lastResult[0].transcript.toLowerCase().trim();
-      this._parseCommand(command);
-    }
-  }
-
-  _handleError(event) {
-    console.error('Speech Recognition Error:', event.error);
-    if (event.error === 'not-allowed') {
-      this.stop();
-      this._showToast('Microphone access denied');
+      console.error('Microphone access denied or error', e);
+      this._showToast('Microphone error');
       const toggle = document.getElementById('voice-toggle');
       if (toggle) toggle.checked = false;
     }
   }
 
-  _handleEnd() {
-    if (this.isActive) {
-      setTimeout(() => {
-        if (this.isActive) {
-          try { this.recognition.start(); } catch(e){}
-        }
-      }, 500);
+  stop() {
+    if (!this.isActive) return;
+    this.isActive = false;
+    if (this.scriptNode) {
+      this.scriptNode.disconnect();
+      this.mediaStreamSource.disconnect();
     }
+    if (this.audioContext) {
+      this.audioContext.close();
+    }
+    if (this.stream) {
+      this.stream.getTracks().forEach(t => t.stop());
+    }
+    if (this.indicator) {
+      this.indicator.classList.remove('voice-active');
+      this.indicator.title = 'Voice Commands (Disabled)';
+    }
+    this._showToast('Voice Assistant Paused');
   }
 
   _showToast(msg) {
@@ -92,7 +126,7 @@ class VoiceAssistant {
 
   _parseCommand(cmd) {
     let handled = false;
-    console.log("Voice Command parsed:", cmd);
+    console.log("Offline Voice Command parsed:", cmd);
 
     if (cmd.includes('start') || cmd.includes('begin') || cmd.includes('go')) {
       if (!this.app.isWorkoutActive) this.app._startWorkout();
@@ -146,7 +180,7 @@ class VoiceAssistant {
     }
 
     if (handled) {
-      this._showToast(`🔊 "${cmd}"`);
+      this._showToast(`Command: "${cmd}"`);
     }
   }
 }

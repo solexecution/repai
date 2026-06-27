@@ -7,7 +7,7 @@
  *    served from cache when offline
  */
 
-const CACHE_VERSION = 'repai-v3';
+const CACHE_VERSION = 'repai-v4';
 
 const APP_SHELL = [
   './index.html',
@@ -19,7 +19,22 @@ const APP_SHELL = [
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
-  './videos/pushup.mp4'
+  './videos/pushup.mp4',
+  './vosk/vosk.js',
+  './vosk/vosk-model-small-en-us-0.15/README',
+  './vosk/vosk-model-small-en-us-0.15/am/final.mdl',
+  './vosk/vosk-model-small-en-us-0.15/conf/mfcc.conf',
+  './vosk/vosk-model-small-en-us-0.15/conf/model.conf',
+  './vosk/vosk-model-small-en-us-0.15/graph/disambig_tid.int',
+  './vosk/vosk-model-small-en-us-0.15/graph/Gr.fst',
+  './vosk/vosk-model-small-en-us-0.15/graph/HCLr.fst',
+  './vosk/vosk-model-small-en-us-0.15/graph/phones/word_boundary.int',
+  './vosk/vosk-model-small-en-us-0.15/ivector/final.dubm',
+  './vosk/vosk-model-small-en-us-0.15/ivector/final.ie',
+  './vosk/vosk-model-small-en-us-0.15/ivector/final.mat',
+  './vosk/vosk-model-small-en-us-0.15/ivector/global_cmvn.stats',
+  './vosk/vosk-model-small-en-us-0.15/ivector/online_cmvn.conf',
+  './vosk/vosk-model-small-en-us-0.15/ivector/splice.conf'
 ];
 
 // ─── Install ────────────────────────────────────────────────────────────────
