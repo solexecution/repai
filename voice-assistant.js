@@ -22,6 +22,11 @@ class VoiceAssistant {
   async initModel() {
     if (this.isModelLoaded) return;
     try {
+      if (this.indicator) {
+        this.indicator.classList.remove('voice-inactive');
+        this.indicator.classList.add('voice-loading');
+        this.indicator.title = 'Voice Model Loading...';
+      }
       this._showToast('Loading Offline Voice Model... (may take a moment)');
       
       // Ensure Vosk is loaded
@@ -29,8 +34,8 @@ class VoiceAssistant {
         throw new Error("Vosk library not loaded");
       }
 
-      // Initialize the model from the local directory
-      this.model = await window.Vosk.createModel('./vosk/vosk-model-small-en-us-0.15');
+      // Initialize the model from the zip file
+      this.model = await window.Vosk.createModel('./vosk/vosk-model-small-en-us-0.15.zip');
       this.recognizer = new this.model.KaldiRecognizer(16000);
       this.recognizer.setWords(true);
       
@@ -42,10 +47,19 @@ class VoiceAssistant {
       });
       
       this.isModelLoaded = true;
+      if (this.indicator) {
+        this.indicator.classList.remove('voice-loading');
+      }
       this._showToast('Voice Model Loaded!');
     } catch(err) {
       console.error("Vosk initialization error", err);
+      if (this.indicator) {
+        this.indicator.classList.remove('voice-loading');
+        this.indicator.classList.add('voice-inactive');
+        this.indicator.title = 'Voice Error';
+      }
       this._showToast('Failed to load voice model');
+      throw err;
     }
   }
 
@@ -82,13 +96,19 @@ class VoiceAssistant {
       
       this.isActive = true;
       if (this.indicator) {
+        this.indicator.classList.remove('voice-loading');
+        this.indicator.classList.remove('voice-inactive');
         this.indicator.classList.add('voice-active');
         this.indicator.title = 'Voice Commands (Listening)';
       }
       this._showToast('Voice Assistant Active');
     } catch (e) {
       console.error('Microphone access denied or error', e);
-      this._showToast('Microphone error');
+      if (this.indicator) {
+        this.indicator.classList.remove('voice-loading');
+        this.indicator.classList.add('voice-inactive');
+      }
+      this._showToast('Microphone error or Model failed');
       const toggle = document.getElementById('voice-toggle');
       if (toggle) toggle.checked = false;
     }
@@ -172,6 +192,15 @@ class VoiceAssistant {
     }
     else if (cmd.includes('split') || cmd.includes('show both') || cmd.includes('both')) {
       this.app.setLayout('split');
+      handled = true;
+    }
+    else if (cmd.includes('picture in picture') || cmd.includes('pip') || cmd.includes('floating')) {
+      this.app.setLayout('pip');
+      handled = true;
+    }
+    else if (cmd.includes('flip video') || cmd.includes('swap video')) {
+      const btn = document.getElementById('layout-btn');
+      if (btn) btn.click();
       handled = true;
     }
     else if (cmd.includes('show camera')) {

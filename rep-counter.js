@@ -48,7 +48,7 @@ function getBestArm(keypoints) {
     const conf = (shoulder.score + elbow.score + wrist.score) / 3;
     if (conf > bestConf) {
       bestConf = conf;
-      bestArm  = { shoulder, elbow, wrist, confidence: conf };
+      bestArm  = { shoulder, elbow, wrist, confidence: conf, indices: new Set([s.shoulder, s.elbow, s.wrist]) };
     }
   }
   return bestArm;
@@ -71,7 +71,7 @@ function getBestTorso(keypoints) {
     const conf = (shoulder.score + hip.score) / 2;
     if (conf > bestConf) {
       bestConf = conf;
-      bestTorso  = { shoulder, hip, confidence: conf };
+      bestTorso  = { shoulder, hip, confidence: conf, indices: new Set([s.shoulder, s.hip]) };
     }
   }
   return bestTorso;
@@ -95,7 +95,7 @@ function getBestLeg(keypoints) {
     const conf = (hip.score + knee.score + ankle.score) / 3;
     if (conf > bestConf) {
       bestConf = conf;
-      bestLeg  = { hip, knee, ankle, confidence: conf };
+      bestLeg  = { hip, knee, ankle, confidence: conf, indices: new Set([s.hip, s.knee, s.ankle]) };
     }
   }
   return bestLeg;
@@ -124,6 +124,7 @@ class BaseCounter {
   calculateProgress(keypoints) { return { progress: 0, conf: 0, raw: null }; }
   isValidMovement(keypoints) { return true; }
   onMoveStart(keypoints) {}
+  getTrackedIndices(keypoints) { return null; }
 
   update(keypoints) {
     const { progress, conf, raw } = this.calculateProgress(keypoints);
@@ -229,6 +230,11 @@ class PushupCounter extends BaseCounter {
     // Strict requirement: Shoulders must not drift horizontally (no walking)
     const armLength = getDist(arm.shoulder, arm.elbow) + getDist(arm.elbow, arm.wrist);
     return Math.abs(arm.shoulder.x - this.repStartX) < (armLength * 0.8);
+  }
+
+  getTrackedIndices(keypoints) {
+    const arm = getBestArm(keypoints);
+    return arm ? arm.indices : null;
   }
 }
 
@@ -417,6 +423,12 @@ class PlankCounter {
       raw: rawAngle
     };
   }
+
+  getTrackedIndices(keypoints) {
+    const torso = getBestTorso(keypoints);
+    // For plank, we might also want ankles, but torso is strictly what is scored.
+    return torso ? torso.indices : null;
+  }
 }
 
 // ─── Squat Counter ────────────────────────────────────────────────────────────
@@ -463,5 +475,10 @@ class SquatCounter extends BaseCounter {
     if (!leg || this.repStartX === null) return true;
     const legLength = getDist(leg.hip, leg.knee) + getDist(leg.knee, leg.ankle);
     return Math.abs(leg.ankle.x - this.repStartX) < (legLength * 0.5);
+  }
+
+  getTrackedIndices(keypoints) {
+    const leg = getBestLeg(keypoints);
+    return leg ? leg.indices : null;
   }
 }

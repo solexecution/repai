@@ -190,28 +190,29 @@ class App {
   // ─── Layout Manager ──────────────────────────────────────────────────────────
 
   setLayout(mode) {
+    this.layoutMode = mode; // store current mode
     const layout = this.$('main-layout');
     const refCell = this.$('reference-cell');
+    const camCell = this.$('camera-cell');
     
+    // Always show both cells unless it's camera or reference only
+    refCell.classList.remove('hidden');
+    camCell.classList.remove('hidden');
+
     if (mode === 'camera') {
       layout.className = 'layout-camera-only';
       refCell.classList.add('hidden');
     } else if (mode === 'reference') {
       layout.className = 'layout-camera-only';
-      refCell.classList.remove('hidden');
-      // Hide camera cell by making layout 1fr but refCell is the only visible one?
-      // Actually, if we hide the camera cell, pose detection will fail because video might stop playing or canvas resizes to 0.
-      // Better to use a specific class for reference only, but for now we can just use CSS to hide it.
-      this.$('camera-cell').classList.add('hidden');
+      camCell.classList.add('hidden');
     } else if (mode === 'split') {
       layout.className = 'layout-split-screen';
-      refCell.classList.remove('hidden');
-      this.$('camera-cell').classList.remove('hidden');
-    }
-    
-    // Ensure camera cell isn't hidden unless explicitly 'reference' mode
-    if (mode !== 'reference') {
-      this.$('camera-cell').classList.remove('hidden');
+    } else if (mode === 'split-flipped') {
+      layout.className = 'layout-split-flipped';
+    } else if (mode === 'pip') {
+      layout.className = 'layout-pip';
+    } else if (mode === 'pip-flipped') {
+      layout.className = 'layout-pip-flipped';
     }
   }
 
@@ -343,7 +344,10 @@ class App {
         const accent  = cfg.accent;
 
         // Draw the frame + skeleton
-        drawSkeletonOnCanvas(this.ctx, this.videoEl, keypoints, accent);
+        const counter = this.counters[this.exercise];
+        const trackedIndices = counter.getTrackedIndices ? counter.getTrackedIndices(keypoints) : null;
+        
+        drawSkeletonOnCanvas(this.ctx, this.videoEl, keypoints, accent, trackedIndices);
 
         // Count reps only if workout is active
         if (this.isWorkoutActive && keypoints.length > 0) {
@@ -810,6 +814,19 @@ class App {
         a.download = `repai-snapshot-${Date.now()}.jpg`;
         a.click();
         this.voice._showToast("Snapshot Saved!");
+      });
+    }
+
+    // Layout cycle button
+    const layoutBtn = this.$('layout-btn');
+    if (layoutBtn) {
+      layoutBtn.addEventListener('click', () => {
+        const modes = ['split', 'split-flipped', 'pip', 'pip-flipped', 'camera'];
+        let currentIdx = modes.indexOf(this.layoutMode);
+        if (currentIdx === -1) currentIdx = 0;
+        const nextMode = modes[(currentIdx + 1) % modes.length];
+        this.setLayout(nextMode);
+        this.voice._showToast(`Layout: ${nextMode.replace('-', ' ').toUpperCase()}`);
       });
     }
 
