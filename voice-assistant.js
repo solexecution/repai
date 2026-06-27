@@ -94,12 +94,18 @@ class VoiceAssistant {
   async start(stream) {
     if (this.isActive) return;
     try {
+      this.stream = stream;
+      // Create audio context immediately during user gesture to prevent suspension!
+      this.audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+      
       if (!this.isModelLoaded) {
         await this.initModel();
       }
       
-      this.stream = stream;
-      this.audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+      if (this.audioContext.state === 'suspended') {
+        await this.audioContext.resume();
+      }
+      
       this.mediaStreamSource = this.audioContext.createMediaStreamSource(this.stream);
       
       this.scriptNode = this.audioContext.createScriptProcessor(4096, 1, 1);
