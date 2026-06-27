@@ -448,6 +448,14 @@ class App {
     this._updateTimer();
 
     this._setStatus('detecting', 'Detecting…');
+    this.voice._showToast('Workout Started');
+
+    // Switch to split screen automatically if this exercise has a video (e.g. pushup)
+    // and we are currently in camera-only mode.
+    if (this.exercise === 'pushup' && this.layoutMode === 'camera') {
+      this.setLayout('split');
+    }
+    
     this.noDetectFrames = 0;
   }
 
@@ -579,6 +587,7 @@ class App {
     this._setStatus('ready', 'Ready — tap START');
     this.guideOverlay.classList.remove('visible');
     this._updateAngleDisplay(null);
+    this.setLayout('camera');
     this._updatePhaseDisplay(null);
     this._updateBreathingPacer(null, null, null);
   }
@@ -780,8 +789,8 @@ class App {
         this._updatePhaseDisplay(null);
         this._updateAngleDisplay(null);
         
-        // Update layout (only pushups has a reference video)
-        this.setLayout(this.exercise === 'pushup' ? 'split' : 'camera');
+        // Hide reference video during setup (camera only)
+        this.setLayout('camera');
       });
     });
 
