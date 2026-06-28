@@ -105,6 +105,23 @@ class VoiceAssistant {
       if (this.audioContext.state === 'suspended') {
         await this.audioContext.resume();
       }
+
+      // ── Wire Vosk event listeners BEFORE sending audio ────────────────────
+      // Vosk is fully event-driven — results come via events, NOT by calling result()
+      this.recognizer.on('result', (message) => {
+        const text = message?.result?.text || '';
+        if (text.trim()) {
+          console.log('Vosk result:', text);
+          this._parseCommand(text.toLowerCase().trim());
+        }
+      });
+
+      this.recognizer.on('partialresult', (message) => {
+        const partial = message?.result?.partial || '';
+        if (partial && this.indicator) {
+          this.indicator.title = `Hearing: "${partial}"`;
+        }
+      });
       
       this.mediaStreamSource = this.audioContext.createMediaStreamSource(this.stream);
       
@@ -114,34 +131,26 @@ class VoiceAssistant {
         try {
           const float32Array = event.inputBuffer.getChannelData(0);
           
-          // Calculate volume for visual clue
+          // Calculate volume for visual pulsing indicator
           let sum = 0;
           for (let i = 0; i < float32Array.length; i++) sum += float32Array[i] * float32Array[i];
           const rms = Math.sqrt(sum / float32Array.length);
-          const vol = Math.min(1, rms * 15); // Scale volume up for UI
+          const vol = Math.min(1, rms * 15);
           
           if (this.indicator) {
-            // Pulse the indicator based on volume
             this.indicator.style.boxShadow = `0 0 ${10 + vol * 30}px rgba(255, 51, 102, ${0.4 + vol})`;
           }
 
-          // The Vosk WASM library expects an AudioBuffer when calling acceptWaveform, OR
-          // we can just pass an object that ducks-types getChannelData() and sampleRate.
-          // Let's pass a mock AudioBuffer so the wrapper processes it correctly.
+          // Send audio to Vosk worker — results come back via the 'result' event above
           const mockAudioBuffer = {
             numberOfChannels: 1,
             sampleRate: this.audioContext.sampleRate,
             getChannelData: () => float32Array
           };
+          this.recognizer.acceptWaveform(mockAudioBuffer);
 
-          if (this.recognizer.acceptWaveform(mockAudioBuffer)) {
-            const res = this.recognizer.result();
-            if (res && res.text) {
-              this._parseCommand(res.text.toLowerCase().trim());
-            }
-          }
         } catch(e) {
-          console.error("Error processing audio", e);
+          console.error('Error processing audio', e);
         }
       };
       
