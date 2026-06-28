@@ -779,8 +779,9 @@ html, body {
 
 #voice-download-progress p {
   margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-  color: var(--text-muted);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
 }
 
 .progress-bar-container {
@@ -790,6 +791,7 @@ html, body {
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .progress-bar-fill {

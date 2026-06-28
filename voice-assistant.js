@@ -49,9 +49,11 @@ class VoiceAssistant {
       if (progressLabel) progressLabel.textContent = 'Downloading & Preparing AI... (takes up to 60s)';
 
       // Let Vosk fetch the model directly in its worker thread.
-      // Doing fetch + Blob in the main thread crashes mobile/tablet browsers due to memory limits.
-      const url = './vosk/vosk-model-small-en-us-0.15.tar.gz';
-      this.model = await window.Vosk.createModel(url);
+      // Must use absolute URL because the Vosk Web Worker runs from a blob: origin
+      // and cannot resolve relative paths!
+      const relativeUrl = './vosk/vosk-model-small-en-us-0.15.tar.gz';
+      const absoluteUrl = new URL(relativeUrl, window.location.href).href;
+      this.model = await window.Vosk.createModel(absoluteUrl);
       this.recognizer = new this.model.KaldiRecognizer(16000);
       this.recognizer.setWords(true);
       
