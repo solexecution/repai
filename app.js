@@ -130,7 +130,6 @@ class App {
     this.phaseEl         = this.$('phase-indicator');
     this.angleEl         = this.$('angle-display');
     this.statusDot       = this.$('status-dot');
-    this.statusText      = this.$('status-text');
     this.timerEl         = this.$('workout-timer');
     this.setBadge        = this.$('set-badge');
     this.startBtn        = this.$('start-btn');
@@ -521,6 +520,12 @@ class App {
     this._resetWorkout();
   }
 
+  _cancelWorkout() {
+    if (!this.isWorkoutActive) return;
+    this.counters[this.exercise].reset(); // zero out without saving
+    this._resetWorkout();
+  }
+
   _renderCalendar() {
     const grid = this.$('heatmap-grid');
     if (!grid) return;
@@ -668,8 +673,7 @@ class App {
   }
 
   _setStatus(state, text) {
-    this.statusDot.className  = 'status-dot ' + state;  // 'loading' | 'detecting' | 'ready' | 'error'
-    this.statusText.textContent = text;
+    if (this.statusDot) this.statusDot.className  = 'status-dot ' + state;  // 'loading' | 'detecting' | 'ready' | 'error'
   }
 
   _setProgress(pct) {
@@ -816,9 +820,13 @@ class App {
     // Exercise toggle
     document.querySelectorAll('.ex-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        if (this.isWorkoutActive) return; // don't switch mid-set
         const ex = btn.dataset.ex;
         if (ex === this.exercise) return;
+        
+        // If workout is active, finish current set before switching
+        if (this.isWorkoutActive) {
+          this._finishSet();
+        }
 
         document.querySelectorAll('.ex-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -845,6 +853,10 @@ class App {
     // Finish set button
     const finishBtn = this.$('finish-btn');
     if (finishBtn) finishBtn.addEventListener('click', () => this._finishSet());
+
+    // Cancel set button
+    const cancelBtn = this.$('cancel-btn');
+    if (cancelBtn) cancelBtn.addEventListener('click', () => this._cancelWorkout());
 
     // Snapshot button
     const snapBtn = this.$('snapshot-btn');

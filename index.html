@@ -144,10 +144,9 @@
     <!-- ── BOTTOM BAR ────────────────────────────────────────────── -->
     <footer id="bottom-bar">
 
-      <!-- Detection status -->
-      <div id="status-pill" role="status">
+      <!-- Detection status (dot only) -->
+      <div id="status-pill" role="status" style="padding: 10px;">
         <div id="status-dot" class="loading"></div>
-        <span id="status-text">Loading…</span>
       </div>
 
       <!-- Workout timer -->
@@ -157,6 +156,11 @@
 
       <!-- Current set badge -->
       <div id="set-badge">SET 1</div>
+
+      <!-- Cancel Set -->
+      <button class="action-btn" id="cancel-btn" title="Cancel this set (reset to 0 without saving)" style="background: var(--bg-surface); color: var(--text-muted); border-color: transparent;">
+        ❌ CANCEL
+      </button>
 
       <!-- Finish Set -->
       <button class="action-btn" id="finish-btn" title="End this set and save to history">

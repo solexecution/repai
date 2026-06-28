@@ -204,9 +204,15 @@ class VoiceAssistant {
       if (this.app.isWorkoutActive) this.app._pauseWorkout();
       handled = true;
     }
-    else if (cmd.includes('reset') || cmd.includes('finish') || cmd.includes('done') || cmd.includes('restart')) {
+    else if (cmd.includes('finish') || cmd.includes('done') || cmd.includes('save set')) {
       this.app._finishSet();
       handled = true;
+    }
+    else if (cmd.includes('cancel') || cmd.includes('reset') || cmd.includes('restart') || cmd.includes('clear')) {
+      if (this.app.isWorkoutActive) {
+        this.app._cancelWorkout();
+        handled = true;
+      }
     }
 
     else if (cmd.includes('push up') || cmd.includes('pushup')) {
