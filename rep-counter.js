@@ -151,10 +151,9 @@ class BaseCounter {
         if (now - this.lastRepTime > this.MIN_REP_MS) {
           
           if (this.isStrict) {
-            // Strict mode: Fractional scoring! (e.g. 0.5 for half rep)
-            if (this.maxProgress > 0.2) { 
-              // Round down to nearest 0.1
-              countAdded = Math.floor(this.maxProgress * 10) / 10;
+            // Strict mode: Must reach at least 85% of full range of motion. No partial points.
+            if (this.maxProgress > 0.85) { 
+              countAdded = 1.0;
               this.count += countAdded;
               this.lastRepTime = now;
               repCompleted = true;
