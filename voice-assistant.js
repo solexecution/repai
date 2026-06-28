@@ -175,10 +175,11 @@ class VoiceAssistant {
     }
     if (this.audioContext) {
       this.audioContext.close();
+      this.audioContext = null;
     }
-    if (this.stream) {
-      this.stream.getTracks().forEach(t => t.stop());
-    }
+    this.scriptNode = null;
+    this.mediaStreamSource = null;
+    // NOTE: Do NOT stop the stream.getTracks() here — the mic stream is managed by app._startMic()
     if (this.indicator) {
       this.indicator.classList.remove('voice-active');
       this.indicator.title = 'Voice Commands (Disabled)';

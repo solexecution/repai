@@ -287,33 +287,41 @@ class App {
   async _startCamera(facing = null) {
     if (facing) this.facingMode = facing;
 
-    // Stop existing stream
+    // Stop existing VIDEO stream (but NOT the mic stream — kept alive separately)
     if (this.stream) {
-      this.stream.getTracks().forEach(t => t.stop());
+      this.stream.getVideoTracks().forEach(t => t.stop());
       this.stream = null;
     }
 
-    const constraints = {
-      video: {
-        facingMode: { exact: this.facingMode },
-        width: { ideal: 1920 },
-        height: { ideal: 1080 },
-        frameRate: { ideal: 15 } // Force higher exposure/sharpness
-      },
-      audio: {
-        echoCancellation: true,
-        noiseSuppression: true,
-        channelCount: 1,
-        sampleRate: 16000
-      },
-    };
-
-    this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+    // Request video-only stream (no audio, to avoid track conflicts)
+    let videoStream;
+    try {
+      videoStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { exact: this.facingMode },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          frameRate: { ideal: 15 },
+        },
+        audio: false,
+      });
+    } catch (err) {
+      // Try without facingMode constraint on failure
+      videoStream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false,
+      });
+    }
+    this.stream = videoStream;
     this.videoEl.srcObject = this.stream;
     this.videoEl.playsInline = true;
 
-    // Start voice assistant automatically with the same stream
-    this.voice.start(this.stream).catch(e => console.error('Voice failed', e));
+    // Start voice mic ONCE — on the first camera start only
+    if (!this.voice.isActive && !this.voice.isModelLoaded) {
+      this._startMic();
+    } else if (!this.voice.isActive) {
+      this._startMic();
+    }
 
     await new Promise((resolve, reject) => {
       this.videoEl.onloadedmetadata = () => {
@@ -325,6 +333,24 @@ class App {
 
     // Mirror canvas when using front camera
     this.canvas.style.transform = this.facingMode === 'user' ? 'scaleX(-1)' : '';
+  }
+
+  async _startMic() {
+    // Acquire dedicated mic-only stream
+    try {
+      const micStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          channelCount: 1,
+        },
+        video: false,
+      });
+      this.micStream = micStream;
+      await this.voice.start(micStream);
+    } catch (e) {
+      console.error('Mic access failed:', e);
+    }
   }
 
   async _flipCamera() {
