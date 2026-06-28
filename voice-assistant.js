@@ -34,51 +34,24 @@ class VoiceAssistant {
         throw new Error("Vosk library not loaded");
       }
 
-      // Fetch the model with progress
-      const url = './vosk/vosk-model-small-en-us-0.15.tar.gz';
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`Failed to fetch model: ${response.statusText}`);
-      
-      const contentLength = response.headers.get('content-length');
-      const total = parseInt(contentLength, 10);
-      let loaded = 0;
-      
+      // Show loading UI
       const progressContainer = document.getElementById('voice-download-progress');
       const progressFill = document.getElementById('voice-progress-fill');
       const progressText = document.getElementById('voice-progress-text');
+      const progressLabel = document.getElementById('voice-progress-label');
       
       if (progressContainer) progressContainer.classList.remove('hidden');
-
-      const reader = response.body.getReader();
-      const chunks = [];
-      
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        chunks.push(value);
-        loaded += value.length;
-        if (total && progressFill && progressText) {
-          const percent = Math.round((loaded / total) * 100);
-          progressFill.style.width = `${percent}%`;
-          progressText.textContent = `${percent}%`;
-        }
-      }
-      
-      // Download complete — now extracting and loading into WASM (this takes 10-30s)
       if (progressFill) {
         progressFill.style.width = '100%';
-        progressFill.classList.add('preparing'); // triggers shimmer animation
+        progressFill.classList.add('preparing'); // shimmer animation
       }
       if (progressText) progressText.textContent = 'Loading…';
+      if (progressLabel) progressLabel.textContent = 'Downloading & Preparing AI... (takes up to 60s)';
 
-      const progressLabel = document.getElementById('voice-progress-label');
-      if (progressLabel) progressLabel.textContent = 'Preparing Voice AI…';
-
-      const blob = new Blob(chunks);
-      const blobUrl = URL.createObjectURL(blob);
-
-      // Initialize the model from the fetched blob url
-      this.model = await window.Vosk.createModel(blobUrl);
+      // Let Vosk fetch the model directly in its worker thread.
+      // Doing fetch + Blob in the main thread crashes mobile/tablet browsers due to memory limits.
+      const url = './vosk/vosk-model-small-en-us-0.15.tar.gz';
+      this.model = await window.Vosk.createModel(url);
       this.recognizer = new this.model.KaldiRecognizer(16000);
       this.recognizer.setWords(true);
       
