@@ -493,11 +493,7 @@ class App {
     this._setStatus('detecting', 'Detecting…');
     this.voice._showToast('Workout Started');
 
-    // Switch to split screen automatically if this exercise has a video (e.g. pushup)
-    // and we are currently in camera-only mode.
-    if (this.exercise === 'pushup' && this.layoutMode === 'camera') {
-      this.setLayout('split');
-    }
+    // Layout stays as user set it — never auto-show the reference video
     
     this.noDetectFrames = 0;
   }
