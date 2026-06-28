@@ -64,7 +64,15 @@ class VoiceAssistant {
         }
       }
       
-      if (progressContainer) progressContainer.classList.add('hidden');
+      // Download complete — now extracting and loading into WASM (this takes 10-30s)
+      if (progressFill) {
+        progressFill.style.width = '100%';
+        progressFill.classList.add('preparing'); // triggers shimmer animation
+      }
+      if (progressText) progressText.textContent = 'Loading…';
+
+      const progressLabel = document.getElementById('voice-progress-label');
+      if (progressLabel) progressLabel.textContent = 'Preparing Voice AI…';
 
       const blob = new Blob(chunks);
       const blobUrl = URL.createObjectURL(blob);
@@ -74,11 +82,14 @@ class VoiceAssistant {
       this.recognizer = new this.model.KaldiRecognizer(16000);
       this.recognizer.setWords(true);
       
+      // Now fully ready — hide progress bar
+      if (progressContainer) progressContainer.classList.add('hidden');
+
       this.isModelLoaded = true;
       if (this.indicator) {
         this.indicator.classList.remove('voice-loading');
       }
-      this._showToast('Voice Model Loaded!');
+      this._showToast('Voice Ready ✓');
     } catch(err) {
       console.error("Vosk initialization error", err);
       if (this.indicator) {

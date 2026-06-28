@@ -791,6 +791,18 @@ html, body {
   transition: width 0.3s ease;
 }
 
+.progress-bar-fill.preparing {
+  width: 100% !important;
+  background: linear-gradient(90deg, var(--accent) 0%, #fff6 50%, var(--accent) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 #voice-progress-text {
   text-align: right;
   font-family: monospace;
