@@ -1021,6 +1021,32 @@ class App {
       });
     }
 
+    // Force Update — nuke SW cache and reload fresh
+    const forceUpdateBtn = this.$('force-update-btn');
+    if (forceUpdateBtn) {
+      forceUpdateBtn.addEventListener('click', async () => {
+        forceUpdateBtn.textContent = 'Clearing cache…';
+        forceUpdateBtn.disabled = true;
+        try {
+          // 1. Unregister all service workers
+          if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(registrations.map(r => r.unregister()));
+          }
+          // 2. Delete all caches
+          if ('caches' in window) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map(k => caches.delete(k)));
+          }
+          // 3. Hard reload
+          window.location.reload(true);
+        } catch (e) {
+          console.error('Force update failed:', e);
+          window.location.reload(true);
+        }
+      });
+    }
+
     // Long-press rep count to reset
     let pressTimer = null;
     this.repBubble.addEventListener('pointerdown', () => {
